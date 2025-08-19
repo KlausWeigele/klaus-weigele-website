@@ -66,8 +66,7 @@ export default function PathTracer() {
           throw new Error("WebGPU device creation failed");
         }
 
-        // Success - initialize path tracer
-        setMode("webgpu");
+        // ChatGPT5 Fix: Create engine first, then mount, then set mode
         const engine = makePathTracer({
           qualityIndex: 2,
           denoise: true,
@@ -76,9 +75,11 @@ export default function PathTracer() {
         
         engineRef.current = engine;
         if (hostRef.current) {
-          await engine.mount(hostRef.current);
+          await engine.mount(hostRef.current);  // Mount kann fehlschlagen
         }
         
+        // Success - set mode only after successful mount
+        setMode("webgpu");
         setLoading(false);
 
       } catch (err) {

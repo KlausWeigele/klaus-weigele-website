@@ -51,12 +51,12 @@ export function makePathTracer(opts: Opts = {}): Engine {
   let denoiseOn = opts.denoise ?? true;
   let time = 0;
   
-  // ── Quality Ladder ─────────────────────────────────────────────────────────
+  // ── Quality Ladder (ChatGPT5 Fix: Resolution=1.0, nur Steps variieren) ────
   const qualityLadder = [
-    { scale: 0.60, steps: 48 },   // Mobile/Low
-    { scale: 0.75, steps: 72 },   // Medium
-    { scale: 0.90, steps: 96 },   // High
-    { scale: 1.00, steps: 112 },  // Ultra
+    { scale: 1.00, steps: 48 },   // Mobile/Low - nur weniger Steps
+    { scale: 1.00, steps: 72 },   // Medium
+    { scale: 1.00, steps: 96 },   // High  
+    { scale: 1.00, steps: 112 },  // Ultra - mehr Steps für bessere Qualität
   ];
   let qualityIndex = Math.max(0, Math.min(qualityLadder.length - 1, opts.qualityIndex ?? 2));
   
@@ -181,15 +181,16 @@ export function makePathTracer(opts: Opts = {}): Engine {
   }
 
   function reallocateRenderTargets(clientWidth: number, clientHeight: number) {
-    const quality = qualityLadder[qualityIndex];
-    const renderWidth = Math.max(8, Math.floor(clientWidth * DPR * quality.scale));
-    const renderHeight = Math.max(8, Math.floor(clientHeight * DPR * quality.scale));
+    // ChatGPT5 Fix: Targets = Canvas-Größe (kein quality.scale mehr)
+    const renderWidth = Math.max(8, Math.floor(clientWidth * DPR));
+    const renderHeight = Math.max(8, Math.floor(clientHeight * DPR));
     
     // Destroy old textures
     [accumTex, rawTex, denoiseTex, gbufNormalTex, gbufDepthTex].forEach(tex => tex?.destroy?.());
     
-    // Create new textures
-    const usage = GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC;
+    // Create new textures - consistent usage flags
+    const usage = GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.TEXTURE_BINDING | 
+                  GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT;
     
     accumTex = createTexture(renderWidth, renderHeight, "rgba16float", usage);
     rawTex = createTexture(renderWidth, renderHeight, "rgba16float", usage);
@@ -197,7 +198,7 @@ export function makePathTracer(opts: Opts = {}): Engine {
     gbufNormalTex = createTexture(renderWidth, renderHeight, "rgba16float", usage);
     gbufDepthTex = createTexture(renderWidth, renderHeight, "r32float", usage);
     
-    // Reset accumulation
+    // Reset accumulation & update uniforms with exact target dimensions
     sampleCount = 0;
     updateUniforms(renderWidth, renderHeight);
     rebuildBindGroups();
@@ -427,13 +428,7 @@ export function makePathTracer(opts: Opts = {}): Engine {
         // ── Camera Ray Generation ─────────────────────────────────────────────
         let uv = (coord + vec2<f32>(0.5)) / res;
         
-        // DEBUG: Simple test pattern to verify output
-        if (u.frame < 10) {
-          let testColor = vec3<f32>(uv.x, uv.y, 0.5);
-          textureStore(accumTex, vec2<i32>(i32(gid.x), i32(gid.y)), vec4<f32>(testColor, 1.0));
-          textureStore(rawTex, vec2<i32>(i32(gid.x), i32(gid.y)), vec4<f32>(testColor, 1.0));
-          return;
-        }
+        // ChatGPT5 Fix: Debug pattern entfernt - echte Fixes implementiert
         
         let screenX = (uv.x - 0.5) * u.sensor.x;
         let screenY = (uv.y - 0.5) * u.sensor.y;
@@ -775,6 +770,12 @@ export function makePathTracer(opts: Opts = {}): Engine {
         device = await adapter.requestDevice();
         if (!device) throw new Error("WebGPU device creation failed");
         
+        // ChatGPT5 Fix: Device lost handler
+        device.lost.then(info => {
+          console.error("WebGPU device lost:", info.reason, info.message);
+          // Optional: Switch to fallback mode
+        });
+        
         // Create canvas and context
         canvas = document.createElement("canvas");
         canvas.style.width = "100%";
@@ -866,8 +867,9 @@ export function makePathTracer(opts: Opts = {}): Engine {
           time += dt;
           
           if (!paused && canvas.width > 0 && canvas.height > 0) {
-            const renderWidth = Math.floor(canvas.width / DPR * qualityLadder[qualityIndex].scale);
-            const renderHeight = Math.floor(canvas.height / DPR * qualityLadder[qualityIndex].scale);
+            // ChatGPT5 Fix: Verwende Target-Dimensionen (bereits in updateUniforms gesetzt)
+            const renderWidth = Math.floor(canvas.width / DPR);
+            const renderHeight = Math.floor(canvas.height / DPR);
             
             updateUniforms(renderWidth, renderHeight);
             
@@ -957,8 +959,12 @@ export function makePathTracer(opts: Opts = {}): Engine {
         qualityIndex = Math.max(0, Math.min(qualityLadder.length - 1, idx));
       }
       
-      if (qualityIndex !== prevIndex && canvas) {
-        reallocateRenderTargets(canvas.clientWidth, canvas.clientHeight);
+      // ChatGPT5 Fix: Reset accumulation bei Quality-Change
+      if (qualityIndex !== prevIndex) {
+        sampleCount = 0;
+        if (canvas) {
+          reallocateRenderTargets(canvas.clientWidth, canvas.clientHeight);
+        }
       }
     },
 
