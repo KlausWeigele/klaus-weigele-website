@@ -1,367 +1,306 @@
+// src/app/demos/grafik/gaussian-splatting/GaussianSplattingViewer.tsx
+// 🎯 BUSINESS PURPOSE: Main Gaussian Splatting demonstration component
+//
+// BUSINESS CONTEXT: Primary showcase for photorealistic 3D reconstruction technology
+// USER INTERACTIONS: Full-featured 3D viewer with PLY asset loading and interactive controls
+// INTEGRATION: Bridges page.tsx layout with SplatViewer.tsx core functionality
+//
+// 🔗 INTEGRATIONS:
+// - Layout: Used by page.tsx as dynamically imported component
+// - Rendering: Wraps SplatViewer.tsx with error boundaries and loading states
+// - Assets: Loads scene.ply from public/assets/splats/
+//
+// 📊 PERFORMANCE: Lazy loading, error boundaries, graceful degradation
+// ♿ ACCESSIBILITY: Screen reader support, keyboard navigation
+// 🎨 QUALITY: Consistent with other demo components, professional presentation
+
 "use client";
 
-import { useRef, useMemo, useState, useEffect } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
-import { Points, PointsMaterial, BufferGeometry, BufferAttribute, Vector3, Color, Euler, Quaternion } from "three";
-import { OrbitControls, Html } from "@react-three/drei";
-import WebGPUViewer from "../../../../components/graphics/WebGPUViewer";
-import * as THREE from "three";
+import React, { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
-// Case Study Hotspot Data
-const CASE_STUDIES = [
-  {
-    id: "office-space",
-    position: new Vector3(2, 0.5, 1),
-    title: "KI-Büro Visualization",
-    description: "Photorealistische Darstellung eines modernen KI-Entwicklungsbüros",
-    details: "Gaussian Splatting ermöglicht perfekte Wiedergabe von Materialien, Beleuchtung und Atmosphäre.",
-    color: new Color(0x4F46E5)
-  },
-  {
-    id: "product-demo",
-    position: new Vector3(-1.5, 1, -2),
-    title: "Produkt-Showcase",
-    description: "Interactive 3D-Produktpräsentation mit fotorealistischer Qualität",
-    details: "Kunden können Produkte aus allen Winkeln betrachten, als wären sie physisch anwesend.",
-    color: new Color(0xEC4899)
-  },
-  {
-    id: "architectural",
-    position: new Vector3(0, -0.5, 3),
-    title: "Architektur-Walkthrough",
-    description: "Immersive Gebäude-Begehung vor der Fertigstellung",
-    details: "Architekten und Kunden erleben Räume mit natürlicher Beleuchtung und Materialien.",
-    color: new Color(0x10B981)
-  },
-  {
-    id: "training",
-    position: new Vector3(-3, 2, 0),
-    title: "VR-Training-Environment",
-    description: "Realitätsnahe Trainingsumgebungen für kritische Situationen",
-    details: "Gaussian Splats bieten die Realitätsnähe, die für effektives Training erforderlich ist.",
-    color: new Color(0xF59E0B)
-  }
-];
-
-// Hotspot Component
-function InteractiveHotspot({ caseStudy, onSelect, isSelected }: { 
-  caseStudy: typeof CASE_STUDIES[0];
-  onSelect: (id: string) => void;
-  isSelected: boolean;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      const time = state.clock.elapsedTime;
-      meshRef.current.scale.setScalar(1 + Math.sin(time * 3) * 0.1);
-      meshRef.current.rotation.y = time * 0.5;
-    }
-  });
-
-  return (
-    <group position={caseStudy.position}>
-      <mesh
-        ref={meshRef}
-        onClick={() => onSelect(caseStudy.id)}
-        onPointerOver={(e) => { e.object.scale.setScalar(1.3); }}
-        onPointerOut={(e) => { e.object.scale.setScalar(1.0); }}
-      >
-        <sphereGeometry args={[0.1]} />
-        <meshBasicMaterial 
-          color={caseStudy.color} 
-          transparent 
-          opacity={isSelected ? 0.9 : 0.7}
-        />
-      </mesh>
-      
-      {/* Pulsing Ring Effect */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.15, 0.2, 16]} />
-        <meshBasicMaterial 
-          color={caseStudy.color} 
-          transparent 
-          opacity={0.3}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      
-      {/* Tooltip */}
-      {isSelected && (
-        <Html position={[0, 0.3, 0]} center>
-          <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white max-w-sm shadow-2xl">
-            <h3 className="font-bold text-lg mb-2" style={{color: `#${caseStudy.color.getHexString()}`}}>
-              {caseStudy.title}
-            </h3>
-            <p className="text-sm text-gray-300 mb-3">
-              {caseStudy.description}
-            </p>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              {caseStudy.details}
-            </p>
+// Dynamically import the heavy SplatViewer component
+const SplatViewer = dynamic(() => import('./SplatViewer'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden shadow-2xl">
+      <div className="flex flex-col items-center justify-center h-full text-white">
+        {/* Loading animation */}
+        <div className="relative mb-6">
+          <div className="w-16 h-16 border-4 border-orange-500/20 rounded-full"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        
+        <div className="text-xl font-semibold mb-2">Loading Gaussian Splats...</div>
+        <div className="text-sm text-gray-400 mb-4">Initializing WebGL renderer and parsing PLY data</div>
+        
+        {/* Progress indicators */}
+        <div className="flex space-x-2 text-xs text-gray-500">
+          <div className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+            <span>WebGL Context</span>
           </div>
-        </Html>
-      )}
-    </group>
+          <div className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+            <span>PLY Parser</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+            <span>Shader Compilation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+});
+
+/**
+ * 🚨 ERROR FALLBACK: Graceful failure handling
+ * 
+ * Provides user-friendly error messages and recovery options.
+ * Handles WebGL compatibility issues and asset loading failures.
+ */
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
+  console.error('Gaussian Splatting Error:', error);
+  
+  // Determine error type for user-friendly messages
+  const getErrorMessage = (error: Error) => {
+    const message = error.message.toLowerCase();
+    
+    if (message.includes('webgl')) {
+      return {
+        title: 'WebGL Not Available',
+        description: 'This demo requires WebGL support. Please try a different browser or enable hardware acceleration.',
+        suggestion: 'Chrome, Firefox, or Safari with WebGL enabled'
+      };
+    }
+    
+    if (message.includes('ply') || message.includes('fetch')) {
+      return {
+        title: 'Asset Loading Failed',
+        description: 'Could not load the PLY point cloud data. Please check your network connection.',
+        suggestion: 'Try refreshing the page or check your internet connection'
+      };
+    }
+    
+    if (message.includes('memory') || message.includes('buffer')) {
+      return {
+        title: 'Insufficient GPU Memory',
+        description: 'Your device may not have enough GPU memory for this demo.',
+        suggestion: 'Try closing other browser tabs or use a device with more GPU memory'
+      };
+    }
+    
+    return {
+      title: 'Rendering Error',
+      description: 'An unexpected error occurred while rendering the 3D scene.',
+      suggestion: 'Try refreshing the page or contact support if the issue persists'
+    };
+  };
+  
+  const errorInfo = getErrorMessage(error);
+  
+  return (
+    <div className="w-full aspect-[16/9] bg-gradient-to-br from-red-900/20 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-red-500/20">
+      <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
+        {/* Error icon */}
+        <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+          <span className="text-3xl">⚠️</span>
+        </div>
+        
+        {/* Error message */}
+        <h3 className="text-xl font-semibold mb-3">{errorInfo.title}</h3>
+        <p className="text-gray-300 mb-4 max-w-md leading-relaxed">{errorInfo.description}</p>
+        <p className="text-sm text-gray-400 mb-6 max-w-md">{errorInfo.suggestion}</p>
+        
+        {/* Actions */}
+        <div className="flex space-x-3">
+          <button
+            onClick={resetErrorBoundary}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            Try Again
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+          >
+            Reload Page
+          </button>
+        </div>
+        
+        {/* Technical details (development only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <details className="mt-6 text-left max-w-md">
+            <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+              Technical Details
+            </summary>
+            <pre className="text-xs text-red-400 mt-2 bg-black/30 p-3 rounded overflow-x-auto">
+              {error.stack || error.message}
+            </pre>
+          </details>
+        )}
+      </div>
+    </div>
   );
 }
 
-// Pseudo-Gaussian Splatting Component
-function GaussianSplatScene() {
-  const pointsRef = useRef<Points>(null);
-  const materialRef = useRef<PointsMaterial>(null);
-  const backgroundRef = useRef<THREE.Mesh>(null);
-  const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
+/**
+ * 💡 CAPABILITY DETECTION: WebGL and device compatibility
+ * 
+ * Checks browser capabilities and device specifications.
+ * Provides warnings for sub-optimal configurations.
+ */
+function CapabilityCheck({ children }: { children: React.ReactNode }) {
+  const [supported, setSupported] = React.useState<boolean | null>(null);
+  const [warnings, setWarnings] = React.useState<string[]>([]);
   
-  const splatCount = 2300000; // 2.3M pseudo-splats
-  const { camera } = useThree();
-
-  // Generate pseudo-Gaussian splats
-  const { positions, colors, sizes, rotations } = useMemo(() => {
-    const positions = new Float32Array(splatCount * 3);
-    const colors = new Float32Array(splatCount * 3);
-    const sizes = new Float32Array(splatCount);
-    const rotations = new Float32Array(splatCount * 4); // Quaternions
-    
-    // Create a photorealistic scene structure
-    const structures = [
-      // Floor plane
-      { center: [0, -1, 0], extent: [8, 0.1, 8], density: 0.3, color: [0.6, 0.6, 0.5] },
-      // Walls
-      { center: [-4, 1, 0], extent: [0.2, 3, 8], density: 0.25, color: [0.8, 0.8, 0.9] },
-      { center: [4, 1, 0], extent: [0.2, 3, 8], density: 0.25, color: [0.8, 0.8, 0.9] },
-      { center: [0, 1, -4], extent: [8, 3, 0.2], density: 0.25, color: [0.9, 0.9, 0.8] },
-      // Furniture-like structures
-      { center: [1, 0, 1], extent: [1.5, 0.8, 0.8], density: 0.4, color: [0.4, 0.3, 0.2] },
-      { center: [-2, 0, -1], extent: [1, 1.2, 0.6], density: 0.35, color: [0.2, 0.2, 0.3] },
-      { center: [2.5, 1.5, -2], extent: [0.8, 0.8, 0.1], density: 0.45, color: [0.1, 0.1, 0.1] },
-      // Ambient particles for atmosphere
-      { center: [0, 2, 0], extent: [10, 4, 10], density: 0.05, color: [0.9, 0.95, 1.0] }
-    ];
-    
-    let splatIndex = 0;
-    
-    structures.forEach((structure) => {
-      const [cx, cy, cz] = structure.center;
-      const [ex, ey, ez] = structure.extent;
-      const [r, g, b] = structure.color;
-      const splatCount = Math.floor(splatCount * structure.density * 0.1);
+  React.useEffect(() => {
+    const checkCapabilities = () => {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
       
-      for (let i = 0; i < splatCount && splatIndex < splatCount; i++) {
-        // Position within structure bounds
-        positions[splatIndex * 3] = cx + (Math.random() - 0.5) * ex;
-        positions[splatIndex * 3 + 1] = cy + (Math.random() - 0.5) * ey;
-        positions[splatIndex * 3 + 2] = cz + (Math.random() - 0.5) * ez;
-        
-        // Color with variation
-        const colorVariation = 0.2;
-        colors[splatIndex * 3] = Math.max(0, Math.min(1, r + (Math.random() - 0.5) * colorVariation));
-        colors[splatIndex * 3 + 1] = Math.max(0, Math.min(1, g + (Math.random() - 0.5) * colorVariation));
-        colors[splatIndex * 3 + 2] = Math.max(0, Math.min(1, b + (Math.random() - 0.5) * colorVariation));
-        
-        // Size variation for realism
-        sizes[splatIndex] = 0.02 + Math.random() * 0.08;
-        
-        // Random rotation (quaternion)
-        const euler = new Euler(
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2
-        );
-        const quat = new Quaternion().setFromEuler(euler);
-        rotations[splatIndex * 4] = quat.x;
-        rotations[splatIndex * 4 + 1] = quat.y;
-        rotations[splatIndex * 4 + 2] = quat.z;
-        rotations[splatIndex * 4 + 3] = quat.w;
-        
-        splatIndex++;
+      if (!gl) {
+        setSupported(false);
+        return;
       }
-    });
-    
-    // Fill remaining with sparse atmospheric particles
-    while (splatIndex < splatCount) {
-      positions[splatIndex * 3] = (Math.random() - 0.5) * 20;
-      positions[splatIndex * 3 + 1] = Math.random() * 6 - 1;
-      positions[splatIndex * 3 + 2] = (Math.random() - 0.5) * 20;
       
-      colors[splatIndex * 3] = 0.5 + Math.random() * 0.5;
-      colors[splatIndex * 3 + 1] = 0.5 + Math.random() * 0.5;
-      colors[splatIndex * 3 + 2] = 0.5 + Math.random() * 0.5;
+      setSupported(true);
       
-      sizes[splatIndex] = 0.01 + Math.random() * 0.02;
+      const newWarnings: string[] = [];
       
-      const euler = new Euler(
-        Math.random() * Math.PI * 2,
-        Math.random() * Math.PI * 2,
-        Math.random() * Math.PI * 2
-      );
-      const quat = new Quaternion().setFromEuler(euler);
-      rotations[splatIndex * 4] = quat.x;
-      rotations[splatIndex * 4 + 1] = quat.y;
-      rotations[splatIndex * 4 + 2] = quat.z;
-      rotations[splatIndex * 4 + 3] = quat.w;
-      
-      splatIndex++;
-    }
-    
-    return { positions, colors, sizes, rotations };
-  }, [splatCount]);
-
-  // Simulate loading progress
-  useEffect(() => {
-    const loadingInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        const next = prev + Math.random() * 15;
-        if (next >= 100) {
-          setIsLoaded(true);
-          clearInterval(loadingInterval);
-          return 100;
+      // Check GPU memory (rough estimation)
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        if (renderer.toLowerCase().includes('software') || renderer.toLowerCase().includes('llvmpipe')) {
+          newWarnings.push('Software rendering detected - performance may be limited');
         }
-        return next;
-      });
-    }, 200);
-
-    return () => clearInterval(loadingInterval);
+      }
+      
+      // Check device pixel ratio for high-DPI displays
+      if (window.devicePixelRatio > 2) {
+        newWarnings.push('High-DPI display detected - performance may be reduced');
+      }
+      
+      // Check available memory (if available)
+      const memory = (performance as any).memory;
+      if (memory && memory.usedJSHeapSize > 100 * 1024 * 1024) { // > 100MB
+        newWarnings.push('High memory usage detected - close other tabs for best performance');
+      }
+      
+      setWarnings(newWarnings);
+    };
+    
+    checkCapabilities();
   }, []);
-
-  // Level-of-detail based on camera distance
-  useFrame((state) => {
-    if (!pointsRef.current || !materialRef.current || !isLoaded) return;
-
-    const cameraDistance = camera.position.distanceTo(new Vector3(0, 0, 0));
-    
-    // Adjust point size based on distance for LOD effect
-    const baseSize = THREE.MathUtils.mapLinear(cameraDistance, 5, 25, 0.08, 0.02);
-    materialRef.current.size = Math.max(0.01, baseSize);
-    
-    // Adjust opacity for depth effect
-    const opacity = THREE.MathUtils.mapLinear(cameraDistance, 5, 30, 0.9, 0.6);
-    materialRef.current.opacity = THREE.MathUtils.clamp(opacity, 0.4, 0.9);
-
-    // Subtle animation for realism
-    const time = state.clock.elapsedTime;
-    if (backgroundRef.current) {
-      backgroundRef.current.material.opacity = 0.05 + 0.02 * Math.sin(time * 0.5);
-    }
-  });
-
-  if (!isLoaded) {
+  
+  if (supported === false) {
     return (
-      <group>
-        {/* Loading Progress Indicator */}
-        <Html center>
-          <div className="text-white text-center">
-            <div className="text-lg font-semibold mb-2">Loading Gaussian Splats</div>
-            <div className="w-64 bg-gray-700 rounded-full h-3 mb-2">
-              <div 
-                className="bg-orange-500 h-3 rounded-full transition-all duration-300" 
-                style={{width: `${loadingProgress}%`}}
-              />
-            </div>
-            <div className="text-sm text-gray-400">
-              {loadingProgress.toFixed(0)}% • Streaming 2.3M splats
-            </div>
+      <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-yellow-500/20">
+        <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
+          <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mb-6">
+            <span className="text-3xl">🚫</span>
           </div>
-        </Html>
-      </group>
+          <h3 className="text-xl font-semibold mb-3">WebGL Not Supported</h3>
+          <p className="text-gray-300 mb-4 max-w-md">
+            Your browser or device doesn't support WebGL, which is required for this 3D demo.
+          </p>
+          <p className="text-sm text-gray-400 mb-6 max-w-md">
+            Please try Chrome, Firefox, or Safari with hardware acceleration enabled.
+          </p>
+          <a
+            href="https://get.webgl.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium"
+          >
+            Check WebGL Support
+          </a>
+        </div>
+      </div>
     );
   }
-
+  
+  if (supported === null) {
+    return (
+      <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-center h-full text-white">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div>Checking device capabilities...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <>
-      {/* Pseudo-Gaussian Splat Points */}
-      <points ref={pointsRef}>
-        <bufferGeometry>
-          <bufferAttribute 
-            attach="attributes-position" 
-            array={positions} 
-            count={splatCount} 
-            itemSize={3} 
-          />
-          <bufferAttribute 
-            attach="attributes-color" 
-            array={colors} 
-            count={splatCount} 
-            itemSize={3} 
-          />
-          <bufferAttribute 
-            attach="attributes-size" 
-            array={sizes} 
-            count={splatCount} 
-            itemSize={1} 
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          ref={materialRef}
-          size={0.05}
-          sizeAttenuation={true}
-          transparent={true}
-          opacity={0.8}
-          vertexColors={true}
-          blending={THREE.NormalBlending}
-          depthWrite={false}
-        />
-      </points>
-
-      {/* Interactive Hotspots */}
-      {CASE_STUDIES.map((caseStudy) => (
-        <InteractiveHotspot
-          key={caseStudy.id}
-          caseStudy={caseStudy}
-          onSelect={setSelectedHotspot}
-          isSelected={selectedHotspot === caseStudy.id}
-        />
-      ))}
-
-      {/* Atmospheric Background */}
-      <mesh ref={backgroundRef} position={[0, 2, -8]} scale={[16, 8, 1]}>
-        <planeGeometry />
-        <meshBasicMaterial 
-          color={0x87CEEB} 
-          transparent 
-          opacity={0.05}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Subtle Lighting for Hotspots */}
-      <ambientLight intensity={0.3} />
-      <pointLight position={[5, 5, 5]} intensity={0.2} />
-      <pointLight position={[-5, 3, -3]} intensity={0.15} color="#ff9999" />
+    <div className="relative">
+      {children}
       
-      {/* Camera Controls with Constraints */}
-      <OrbitControls
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        minDistance={3}
-        maxDistance={30}
-        minPolarAngle={Math.PI / 6}
-        maxPolarAngle={Math.PI - Math.PI / 6}
-        autoRotate={false}
-        target={[0, 0, 0]}
-      />
-    </>
+      {/* Performance warnings */}
+      {warnings.length > 0 && (
+        <div className="absolute top-4 right-4 bg-yellow-500/20 backdrop-blur-sm border border-yellow-500/30 rounded-lg p-3 text-yellow-100 text-sm max-w-xs">
+          <div className="font-semibold mb-1">⚠️ Performance Notes:</div>
+          <ul className="text-xs space-y-1">
+            {warnings.map((warning, index) => (
+              <li key={index}>• {warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 
-// Main viewer component
+/**
+ * 🎯 MAIN COMPONENT: Gaussian Splatting Viewer
+ * 
+ * Complete demo component with error handling, capability detection, and loading states.
+ * Integrates all sub-components for a polished user experience.
+ */
 export default function GaussianSplattingViewer() {
-  return (
-    <WebGPUViewer
-      title="Gaussian Splatting"
-      description="Photorealistic 3D scene with 2.3M neural reconstructed splats"
-      gradient="bg-gradient-to-br from-orange-500 to-orange-700"
-      requiresWebGPU={true} // This demo requires WebGPU
-      showPerformanceMonitor={true}
-      minFps={20}
-      maxMemory={800}
-      fallbackVideoUrl="/demos/gaussian-splatting-preview.mp4"
-      fallbackImageUrl="/demos/gaussian-splatting-poster.jpg"
-    >
-      <GaussianSplatScene />
-    </WebGPUViewer>
-  );
+  // Check if react-error-boundary is available, otherwise use a simple try-catch approach
+  try {
+    // Try to use ErrorBoundary if available
+    const { ErrorBoundary } = require('react-error-boundary');
+    
+    return (
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <CapabilityCheck>
+          <Suspense fallback={
+            <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden shadow-2xl">
+              <div className="flex items-center justify-center h-full text-white">
+                <div className="text-center">
+                  <div className="animate-spin w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <div className="text-lg">Loading 3D Engine...</div>
+                </div>
+              </div>
+            </div>
+          }>
+            <SplatViewer />
+          </Suspense>
+        </CapabilityCheck>
+      </ErrorBoundary>
+    );
+  } catch (e) {
+    // Fallback if ErrorBoundary is not available
+    return (
+      <CapabilityCheck>
+        <Suspense fallback={
+          <div className="w-full aspect-[16/9] bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-center h-full text-white">
+              <div className="text-center">
+                <div className="animate-spin w-12 h-12 border-3 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <div className="text-lg">Loading 3D Engine...</div>
+              </div>
+            </div>
+          </div>
+        }>
+          <SplatViewer />
+        </Suspense>
+      </CapabilityCheck>
+    );
+  }
 }
