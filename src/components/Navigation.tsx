@@ -15,7 +15,8 @@ export default function Navigation() {
   const services = [
     { name: "KI-Strategie", href: "/services#strategy", description: "Strategische KI-Roadmap" },
     { name: "ML-Prototyping", href: "/services#prototyping", description: "Proof-of-Concept Entwicklung" },
-    { name: "Enterprise-Integration", href: "/services#enterprise", description: "Skalierbare KI-Lösungen" }
+    { name: "Enterprise-Integration", href: "/services#enterprise", description: "Skalierbare KI-Lösungen" },
+    { name: "Live Demos", href: "/#demos", description: "Interaktive KI-Demonstrationen" }
   ];
 
   return (
@@ -93,6 +94,17 @@ export default function Navigation() {
               }`}
             >
               Case Studies
+            </Link>
+
+            <Link 
+              href="/#demos" 
+              className={`font-medium transition-colors duration-200 ${
+                pathname.startsWith('/demos') 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700 hover:text-blue-600'
+              }`}
+            >
+              Live Demos
             </Link>
 
             <Link 

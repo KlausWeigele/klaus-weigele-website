@@ -6,7 +6,8 @@ import Navigation from "../components/Navigation";
 import CountUpNumber from "../components/CountUpNumber";
 import InteractiveHeroVisual from "../components/InteractiveHeroVisual";
 import RoleToggle from "../components/RoleToggle";
-import { ArrowRight, CheckCircle, Brain, Rocket, Building2, Phone, Mail, Calendar, Linkedin, Star, Award } from "lucide-react";
+import { ArrowRight, CheckCircle, Brain, Rocket, Building2, Phone, Mail, Calendar, Linkedin, Star, Award, BarChart3, Bot, Eye, TrendingUp } from "lucide-react";
+import DemoCard from "../components/DemoCard";
 
 export default function Home() {
   return (
@@ -134,6 +135,87 @@ export default function Home() {
                 </Link>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Demo Projects Section */}
+      <section className="py-24 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-purple-600 text-white shadow-lg mb-6">
+              🚀 Live Demo-Projekte
+            </div>
+            <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 font-poppins">
+              KI-Expertise{' '}
+              <span className="bg-purple-600 bg-clip-text text-transparent">
+                live erleben
+              </span>
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Interaktive Demos zeigen konkrete Anwendungen und Business-Value verschiedener KI-Technologien
+            </p>
+          </div>
+
+          {/* Demo Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <DemoCard
+              title="Grafik & Visualization"
+              description="Interactive Dashboards und Datenvisualisierungen für bessere Business-Entscheidungen"
+              businessValue="Komplexe Daten verständlich machen, 40% schnellere Entscheidungsfindung"
+              technologies={["D3.js", "Chart.js", "Plotly", "Python"]}
+              href="/demos/grafik"
+              icon={BarChart3}
+              gradient="bg-gradient-to-br from-blue-500 to-blue-700"
+              previewImage=""
+            />
+            
+            <DemoCard
+              title="Machine Learning"
+              description="Predictive Analytics und intelligente Klassifikation für datengetriebene Vorhersagen"
+              businessValue="Risiken minimieren, 25% bessere Vorhersagegenauigkeit"
+              technologies={["scikit-learn", "XGBoost", "Pandas", "TensorFlow"]}
+              href="/demos/machine-learning"
+              icon={Bot}
+              gradient="bg-gradient-to-br from-green-500 to-green-700"
+              previewImage=""
+            />
+            
+            <DemoCard
+              title="Deep Learning"
+              description="Neural Networks und Computer Vision für komplexe Mustererkennung und Automatisierung"
+              businessValue="Automatisierung komplexer Prozesse, 60% Zeitersparnis"
+              technologies={["PyTorch", "TensorFlow", "OpenCV", "Keras"]}
+              href="/demos/deep-learning"
+              icon={Eye}
+              gradient="bg-gradient-to-br from-purple-500 to-purple-700"
+              previewImage=""
+            />
+            
+            <DemoCard
+              title="Statistik & Analytics"
+              description="Statistical Analysis und Business Intelligence für fundierte Geschäftsentscheidungen"
+              businessValue="Datenbasierte Strategien, 30% höhere Erfolgsrate"
+              technologies={["Python scipy", "R", "Statistical Modeling", "A/B Testing"]}
+              href="/demos/statistik"
+              icon={TrendingUp}
+              gradient="bg-gradient-to-br from-orange-500 to-orange-700"
+              previewImage=""
+            />
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-16">
+            <p className="text-lg text-gray-600 mb-8">
+              Interessiert an einem individuellen KI-Projekt für Ihr Unternehmen?
+            </p>
+            <Link 
+              href="/contact"
+              className="inline-flex items-center justify-center px-8 py-4 bg-purple-600 text-white text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl hover:bg-purple-700 transition-all duration-300 cta-sweep overflow-hidden"
+            >
+              <span className="relative z-10">Kostenlose Beratung vereinbaren</span>
+              <ArrowRight className="ml-3 w-5 h-5 relative z-10" />
+            </Link>
           </div>
         </div>
       </section>
