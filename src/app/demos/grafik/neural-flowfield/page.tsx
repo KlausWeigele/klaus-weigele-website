@@ -34,10 +34,11 @@ export default function NeuralFlowfieldDemo() {
             GPU-Partikel-System der nächsten Generation
           </h2>
           <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-            Diese Demo zeigt ein hochmodernes GPU-Partikel-System mit bis zu 4 Millionen Partikeln 
-            auf Desktop-Systemen. Die Partikel folgen curl-noise Vektorfeldern und können dynamisch 
-            "KLAUS WEIGELE" oder andere Logos formen. Die Implementierung nutzt WebGPU Compute Shaders 
-            für maximale Performance oder fällt elegant auf WebGL2 Float-Textures zurück.
+            <strong>Revolutionäre ChatGPT5-Implementation:</strong> Ein außergewöhnliches GPU-Partikel-System 
+            mit bis zu 1M+ Partikeln, die durch drei kombinierbare Kraftfelder gesteuert werden. 
+            Echte WebGPU Compute Shaders für Desktop-Performance, REGL WebGL2-Engine für Kompatibilität, 
+            und Canvas-basierte SDF-Textures für präzise "KLAUS WEIGELE" Logo-Formation. 
+            Mit Audio-Reaktivität und intelligenten Fallbacks.
           </p>
           
           <div className="space-y-4">
@@ -46,8 +47,8 @@ export default function NeuralFlowfieldDemo() {
                 <span className="text-white text-xs font-bold">1</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Massive Parallelisierung</h3>
-                <p className="text-gray-600">WebGPU Compute Shaders verarbeiten Millionen Partikel parallel auf der GPU</p>
+                <h3 className="font-semibold text-gray-900">WebGPU Compute Shaders</h3>
+                <p className="text-gray-600">Echte WGSL compute shaders mit 1M+ Partikeln auf modernen GPUs</p>
               </div>
             </div>
             
@@ -56,8 +57,8 @@ export default function NeuralFlowfieldDemo() {
                 <span className="text-white text-xs font-bold">2</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Curl-Noise Algorithmus</h3>
-                <p className="text-gray-600">Mathematisch elegante Strömungsfelder für natürliche Partikelbewegungen</p>
+                <h3 className="font-semibold text-gray-900">Drei Kraftfelder (kombinierbar)</h3>
+                <p className="text-gray-600">Curl-noise + SDF Logo-Attractor + Interactive Vortices</p>
               </div>
             </div>
             
@@ -66,8 +67,8 @@ export default function NeuralFlowfieldDemo() {
                 <span className="text-white text-xs font-bold">3</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Logo-Formation SDF</h3>
-                <p className="text-gray-600">Signed Distance Fields für präzise Text- und Logo-Formationen</p>
+                <h3 className="font-semibold text-gray-900">Audio-Reaktivität</h3>
+                <p className="text-gray-600">Mikrofon-Input moduliert Turbulenz und Partikel-Größe (opt-in)</p>
               </div>
             </div>
             
@@ -76,8 +77,8 @@ export default function NeuralFlowfieldDemo() {
                 <span className="text-white text-xs font-bold">4</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Interactive Vortizes</h3>
-                <p className="text-gray-600">Maus/Touch-gesteuerte Wirbel beeinflussen das Partikelfeld in Echtzeit</p>
+                <h3 className="font-semibold text-gray-900">Intelligente Fallbacks</h3>
+                <p className="text-gray-600">REGL WebGL2 → Static Poster → prefers-reduced-motion Support</p>
               </div>
             </div>
           </div>
@@ -88,19 +89,19 @@ export default function NeuralFlowfieldDemo() {
           <h3 className="text-xl font-bold text-gray-900 mb-4">Performance Specs</h3>
           <div className="space-y-4">
             <div className="text-center p-4 bg-white rounded-xl shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">4M</div>
-              <div className="text-sm text-gray-700">Partikel (Desktop)</div>
-              <div className="text-xs text-gray-500 mt-1">WebGPU</div>
+              <div className="text-2xl font-bold text-blue-600">1M+</div>
+              <div className="text-sm text-gray-700">Partikel (WebGPU)</div>
+              <div className="text-xs text-gray-500 mt-1">WGSL Compute</div>
             </div>
             <div className="text-center p-4 bg-white rounded-xl shadow-sm">
-              <div className="text-2xl font-bold text-green-600">150K</div>
-              <div className="text-sm text-gray-700">Partikel (Mobile)</div>
-              <div className="text-xs text-gray-500 mt-1">WebGL2</div>
+              <div className="text-2xl font-bold text-green-600">512K</div>
+              <div className="text-sm text-gray-700">Partikel (WebGL2)</div>
+              <div className="text-xs text-gray-500 mt-1">REGL Engine</div>
             </div>
             <div className="text-center p-4 bg-white rounded-xl shadow-sm">
               <div className="text-2xl font-bold text-purple-600">60fps</div>
               <div className="text-sm text-gray-700">Target Performance</div>
-              <div className="text-xs text-gray-500 mt-1">Adaptive Quality</div>
+              <div className="text-xs text-gray-500 mt-1">Auto-Detection</div>
             </div>
           </div>
           
@@ -120,10 +121,26 @@ export default function NeuralFlowfieldDemo() {
       <div className="mb-12">
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Interactive Neural Flowfield</h3>
-          <p className="text-gray-700">
-            Move your mouse over the demo to create vortices. The particles will flow around your cursor 
-            and form the "KLAUS WEIGELE" logo. On touch devices, tap and drag to interact.
+          <p className="text-gray-700 mb-4">
+            <strong>Interaktive Controls:</strong> Bewege die Maus für Wirbel-Effekte, drücke <kbd className="bg-gray-200 px-1 rounded">H</kbd> für 
+            erweiterte Controls, <kbd className="bg-gray-200 px-1 rounded">1-3</kbd> für Kraft-Presets, 
+            <kbd className="bg-gray-200 px-1 rounded">A</kbd> für Audio-Reaktivität (Mikrofon-Zugriff), 
+            und <kbd className="bg-gray-200 px-1 rounded">Space</kbd> zum Pausieren.
           </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="bg-blue-50 p-3 rounded-xl text-center">
+              <div className="font-semibold text-blue-800">🌊 Balanced</div>
+              <div className="text-xs text-blue-700">Natürliche Strömung</div>
+            </div>
+            <div className="bg-purple-50 p-3 rounded-xl text-center">
+              <div className="font-semibold text-purple-800">⚡ Chaotic</div>
+              <div className="text-xs text-purple-700">Energetische Turbulenzen</div>
+            </div>
+            <div className="bg-green-50 p-3 rounded-xl text-center">
+              <div className="font-semibold text-green-800">📝 Logo Focus</div>
+              <div className="text-xs text-green-700">KLAUS WEIGELE Formation</div>
+            </div>
+          </div>
         </div>
         
         <Suspense fallback={
@@ -141,40 +158,40 @@ export default function NeuralFlowfieldDemo() {
       {/* Technical Implementation */}
       <div className="bg-gray-50 rounded-2xl p-8 mb-12">
         <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Technical Implementation
+          ChatGPT5 Advanced Architecture 
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-sm">GPU</span>
+              <span className="text-white font-bold text-sm">WGSL</span>
             </div>
-            <h4 className="font-semibold text-gray-900">Compute Shaders</h4>
-            <p className="text-sm text-gray-600 mt-2">WebGPU WGSL pipeline for particle position and velocity updates</p>
+            <h4 className="font-semibold text-gray-900">WebGPU Compute</h4>
+            <p className="text-sm text-gray-600 mt-2">Echte WGSL compute shaders mit 256 threads per workgroup</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-sm">SDF</span>
+              <span className="text-white font-bold text-sm">REGL</span>
             </div>
-            <h4 className="font-semibold text-gray-900">Distance Fields</h4>
-            <p className="text-sm text-gray-600 mt-2">Signed Distance Functions for precise text and logo formation</p>
+            <h4 className="font-semibold text-gray-900">WebGL2 Engine</h4>
+            <p className="text-sm text-gray-600 mt-2">REGL ping-pong framebuffer simulation für broad compatibility</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-sm">∇</span>
+              <span className="text-white font-bold text-sm">SDF</span>
             </div>
-            <h4 className="font-semibold text-gray-900">Curl Noise</h4>
-            <p className="text-sm text-gray-600 mt-2">Divergence-free vector fields for natural fluid-like motion</p>
+            <h4 className="font-semibold text-gray-900">Canvas SDF</h4>
+            <p className="text-sm text-gray-600 mt-2">Canvas-blur pseudo-SDF für "KLAUS WEIGELE" logo attraction</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-orange-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <span className="text-white font-bold text-sm">R3F</span>
+              <span className="text-white font-bold text-sm">🎵</span>
             </div>
-            <h4 className="font-semibold text-gray-900">React Three Fiber</h4>
-            <p className="text-sm text-gray-600 mt-2">Modern React integration with Three.js instanced rendering</p>
+            <h4 className="font-semibold text-gray-900">Audio RMS</h4>
+            <p className="text-sm text-gray-600 mt-2">Web Audio API für microphone-driven particle turbulence</p>
           </div>
         </div>
 
